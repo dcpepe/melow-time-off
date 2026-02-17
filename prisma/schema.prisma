@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  MEMBER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String
+  email     String   @unique
+  password  String
+  role      Role     @default(MEMBER)
+  color     String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  requests TimeOffRequest[]
+
+  @@map("users")
+}
+
+model TimeOffRequest {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  startDate   DateTime
+  endDate     DateTime
+  workingDays Int
+  note        String?
+  status      Status    @default(PENDING)
+  adminNote   String?
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("time_off_requests")
+}
+
+model InviteConfig {
+  id        String   @id @default(uuid())
+  code      String   @unique
+  createdBy String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@map("invite_configs")
+}
