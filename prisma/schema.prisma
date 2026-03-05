@@ -51,13 +51,3 @@ model TimeOffRequest {
 
   @@map("time_off_requests")
 }
-
-model InviteConfig {
-  id        String   @id @default(uuid())
-  code      String   @unique
-  createdBy String
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-
-  @@map("invite_configs")
-}

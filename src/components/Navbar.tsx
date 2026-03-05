@@ -22,7 +22,6 @@ export default function Navbar() {
       ? [
           { href: "/admin", label: "Team" },
           { href: "/admin/pending", label: "Pending" },
-          { href: "/admin/settings", label: "Settings" },
         ]
       : []),
   ];

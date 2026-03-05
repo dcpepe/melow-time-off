@@ -5,9 +5,9 @@ import { getNextColor } from "@/lib/colors";
 
 export async function POST(request: NextRequest) {
   try {
-    const { name, email, password, inviteCode } = await request.json();
+    const { name, email, password } = await request.json();
 
-    if (!name || !email || !password || !inviteCode) {
+    if (!name || !email || !password) {
       return NextResponse.json(
         { error: "All fields are required" },
         { status: 400 }
@@ -17,18 +17,6 @@ export async function POST(request: NextRequest) {
     if (password.length < 6) {
       return NextResponse.json(
         { error: "Password must be at least 6 characters" },
-        { status: 400 }
-      );
-    }
-
-    // Verify invite code
-    const invite = await prisma.inviteConfig.findFirst({
-      where: { code: inviteCode, isActive: true },
-    });
-
-    if (!invite) {
-      return NextResponse.json(
-        { error: "Invalid invite code" },
         { status: 400 }
       );
     }

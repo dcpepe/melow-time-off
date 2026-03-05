@@ -1,22 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Suspense } from "react";
 
-function SignupForm() {
+export default function SignupPage() {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [inviteCode, setInviteCode] = useState("");
-
-  useEffect(() => {
-    const code = searchParams.get("code");
-    if (code) setInviteCode(code.toUpperCase());
-  }, [searchParams]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -29,7 +21,7 @@ function SignupForm() {
       const res = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, inviteCode }),
+        body: JSON.stringify({ name, email, password }),
       });
 
       const data = await res.json();
@@ -102,7 +94,7 @@ function SignupForm() {
               />
             </div>
 
-            <div className="mb-3">
+            <div className="mb-4">
               <label className="block text-sm text-text-muted mb-1">
                 Password
               </label>
@@ -114,20 +106,6 @@ function SignupForm() {
                 minLength={6}
                 className="w-full px-3 py-2 bg-bg-primary border border-border rounded-lg text-text-primary text-sm placeholder:text-text-dim focus:outline-none focus:border-gold/50"
                 placeholder="At least 6 characters"
-              />
-            </div>
-
-            <div className="mb-4">
-              <label className="block text-sm text-text-muted mb-1">
-                Invite code
-              </label>
-              <input
-                type="text"
-                value={inviteCode}
-                onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
-                required
-                className="w-full px-3 py-2 bg-bg-primary border border-border rounded-lg text-text-primary text-sm placeholder:text-text-dim focus:outline-none focus:border-gold/50 font-mono tracking-widest"
-                placeholder="ABCD1234"
               />
             </div>
 
@@ -149,13 +127,5 @@ function SignupForm() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function SignupPage() {
-  return (
-    <Suspense>
-      <SignupForm />
-    </Suspense>
   );
 }
