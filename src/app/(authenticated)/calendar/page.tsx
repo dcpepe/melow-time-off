@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { format, addMonths, subMonths, isWeekend, eachDayOfInterval } from "date-fns";
 import { getCalendarDays } from "@/lib/dates";
 
@@ -26,6 +27,7 @@ interface DayDetail {
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function CalendarPage() {
+  const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [requests, setRequests] = useState<CalendarRequest[]>([]);
   const [users, setUsers] = useState<{ id: string; name: string; color: string }[]>([]);
@@ -87,12 +89,14 @@ export default function CalendarPage() {
     });
   }
 
-  function handleDayClick(dateStr: string) {
+  function handleDayClick(dateStr: string, isCurrentMonth: boolean) {
+    if (!isCurrentMonth) return;
     const entries = getRequestsForDay(dateStr);
     if (entries.length > 0) {
       setSelectedDay({ date: dateStr, entries });
     } else {
-      setSelectedDay(null);
+      // Navigate to request page with this date pre-selected
+      router.push(`/request?date=${dateStr}`);
     }
   }
 
@@ -151,7 +155,7 @@ export default function CalendarPage() {
             return (
               <div
                 key={day.dateStr}
-                onClick={() => handleDayClick(day.dateStr)}
+                onClick={() => handleDayClick(day.dateStr, day.isCurrentMonth)}
                 className={`min-h-[80px] sm:min-h-[100px] border-b border-r border-border p-1 sm:p-2 cursor-pointer transition-colors hover:bg-bg-hover ${
                   !day.isCurrentMonth ? "opacity-30" : ""
                 } ${day.isWeekend ? "bg-bg-primary/50" : ""}`}

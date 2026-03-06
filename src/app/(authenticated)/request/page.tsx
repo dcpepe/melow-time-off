@@ -2,14 +2,26 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { format, isWeekend, eachDayOfInterval, isBefore, startOfDay } from "date-fns";
+import { format, isWeekend, eachDayOfInterval, isBefore, startOfDay, parseISO } from "date-fns";
 import { DayPicker, DateRange } from "react-day-picker";
 import { showToast } from "@/components/Toast";
 import "react-day-picker/style.css";
 
+function getInitialRange(): DateRange | undefined {
+  if (typeof window === "undefined") return undefined;
+  const params = new URLSearchParams(window.location.search);
+  const dateStr = params.get("date");
+  if (!dateStr) return undefined;
+  const date = parseISO(dateStr);
+  if (isNaN(date.getTime()) || isWeekend(date) || isBefore(date, startOfDay(new Date()))) {
+    return undefined;
+  }
+  return { from: date, to: date };
+}
+
 export default function RequestPage() {
   const router = useRouter();
-  const [range, setRange] = useState<DateRange | undefined>();
+  const [range, setRange] = useState<DateRange | undefined>(getInitialRange);
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -71,6 +83,7 @@ export default function RequestPage() {
             mode="range"
             selected={range}
             onSelect={setRange}
+            defaultMonth={range?.from || today}
             disabled={[{ before: today }, { dayOfWeek: [0, 6] }]}
             numberOfMonths={1}
             classNames={{
