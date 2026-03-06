@@ -35,6 +35,14 @@ export default function AdminPage() {
       if (res.ok) {
         const data = await res.json();
         setStats(data.stats);
+      } else if (res.status === 403) {
+        // Role may have just been updated - refresh session and retry once
+        await fetch("/api/auth/me");
+        const retry = await fetch("/api/admin/stats");
+        if (retry.ok) {
+          const data = await retry.json();
+          setStats(data.stats);
+        }
       }
     } catch {
       console.error("Failed to fetch stats");
