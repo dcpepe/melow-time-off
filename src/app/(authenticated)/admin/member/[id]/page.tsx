@@ -32,6 +32,11 @@ export default function MemberDetailPage() {
   const currentUser = useAuthStore((s) => s.user);
   const [member, setMember] = useState<MemberDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const fetchMember = useCallback(async () => {
     try {
@@ -50,6 +55,50 @@ export default function MemberDetailPage() {
   useEffect(() => {
     fetchMember();
   }, [fetchMember]);
+
+  useEffect(() => {
+    if (member) {
+      setEditName(member.name);
+      setEditEmail(member.email);
+    }
+  }, [member]);
+
+  async function handleSaveProfile() {
+    if (!member) return;
+    setSaving(true);
+    try {
+      const body: Record<string, string> = {};
+      if (editName !== member.name) body.name = editName;
+      if (editEmail !== member.email) body.email = editEmail;
+      if (editPassword) body.password = editPassword;
+
+      if (Object.keys(body).length === 0) {
+        setEditing(false);
+        setSaving(false);
+        return;
+      }
+
+      const res = await fetch(`/api/users/${member.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        showToast("Profile updated", "success");
+        setEditing(false);
+        setEditPassword("");
+        fetchMember();
+      } else {
+        const data = await res.json();
+        showToast(data.error || "Failed to update", "error");
+      }
+    } catch {
+      showToast("Failed to update profile", "error");
+    } finally {
+      setSaving(false);
+    }
+  }
 
   async function handleRoleToggle() {
     if (!member) return;
@@ -193,24 +242,32 @@ export default function MemberDetailPage() {
           </div>
 
           {/* Admin actions */}
-          {member.id !== currentUser?.id && (
-            <div className="flex gap-2">
-              <button
-                onClick={handleRoleToggle}
-                className="px-3 py-1.5 border border-border rounded-md text-xs text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
-              >
-                {member.role === "ADMIN"
-                  ? "Demote to Member"
-                  : "Promote to Admin"}
-              </button>
-              <button
-                onClick={handleRemove}
-                className="px-3 py-1.5 border border-danger/30 rounded-md text-xs text-danger hover:bg-danger/10 transition-colors"
-              >
-                Remove
-              </button>
-            </div>
-          )}
+          <div className="flex gap-2 flex-wrap">
+            <button
+              onClick={() => setEditing(!editing)}
+              className="px-3 py-1.5 border border-gold/30 rounded-md text-xs text-gold hover:bg-gold/10 transition-colors"
+            >
+              {editing ? "Cancel Edit" : "Edit Profile"}
+            </button>
+            {member.id !== currentUser?.id && (
+              <>
+                <button
+                  onClick={handleRoleToggle}
+                  className="px-3 py-1.5 border border-border rounded-md text-xs text-text-muted hover:text-text-primary hover:bg-bg-hover transition-colors"
+                >
+                  {member.role === "ADMIN"
+                    ? "Demote to Member"
+                    : "Promote to Admin"}
+                </button>
+                <button
+                  onClick={handleRemove}
+                  className="px-3 py-1.5 border border-danger/30 rounded-md text-xs text-danger hover:bg-danger/10 transition-colors"
+                >
+                  Remove
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
         {/* Stats */}
@@ -237,6 +294,53 @@ export default function MemberDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Form */}
+      {editing && (
+        <div className="bg-bg-surface border border-gold/20 rounded-lg p-6 mb-6">
+          <h2 className="text-lg font-semibold mb-4">Edit Profile</h2>
+          <div className="space-y-4 max-w-md">
+            <div>
+              <label className="block text-sm text-text-muted mb-1">Name</label>
+              <input
+                type="text"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="w-full px-3 py-2 bg-bg-primary border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-text-muted mb-1">Email</label>
+              <input
+                type="email"
+                value={editEmail}
+                onChange={(e) => setEditEmail(e.target.value)}
+                className="w-full px-3 py-2 bg-bg-primary border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-gold/50"
+              />
+            </div>
+            <div>
+              <label className="block text-sm text-text-muted mb-1">
+                New Password{" "}
+                <span className="text-text-dim">(leave blank to keep current)</span>
+              </label>
+              <input
+                type="password"
+                value={editPassword}
+                onChange={(e) => setEditPassword(e.target.value)}
+                placeholder="••••••••"
+                className="w-full px-3 py-2 bg-bg-primary border border-border rounded-md text-sm text-text-primary focus:outline-none focus:border-gold/50"
+              />
+            </div>
+            <button
+              onClick={handleSaveProfile}
+              disabled={saving}
+              className="px-4 py-2 bg-gold text-bg-primary rounded-md text-sm font-semibold hover:bg-gold-dark transition-colors disabled:opacity-50"
+            >
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Request History */}
       <h2 className="text-lg font-semibold mb-4">Request History</h2>

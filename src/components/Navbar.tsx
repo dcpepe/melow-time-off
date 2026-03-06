@@ -83,12 +83,14 @@ export default function Navbar() {
 
             {/* User avatar */}
             <div className="flex items-center gap-2">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-bg-primary"
+              <Link
+                href="/settings"
+                className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-semibold text-bg-primary hover:ring-2 hover:ring-gold/50 transition-all"
                 style={{ backgroundColor: user.color }}
+                title="Settings"
               >
                 {user.name.charAt(0).toUpperCase()}
-              </div>
+              </Link>
               <button
                 onClick={logout}
                 className="text-text-dim hover:text-text-muted text-xs hidden sm:block"
@@ -155,6 +157,17 @@ export default function Navbar() {
               className="px-3 py-2 rounded-md text-sm text-gold font-semibold"
             >
               + Request Time Off
+            </Link>
+            <Link
+              href="/settings"
+              onClick={() => setMobileOpen(false)}
+              className={`px-3 py-2 rounded-md text-sm ${
+                pathname === "/settings"
+                  ? "bg-gold/10 text-gold"
+                  : "text-text-muted hover:text-text-primary"
+              }`}
+            >
+              Settings
             </Link>
             <button
               onClick={logout}
