@@ -8,10 +8,18 @@ const globalForPrisma = globalThis as unknown as {
 
 function createPrismaClient(): PrismaClient {
   const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
+
+  // Remove sslmode from connection string — we configure SSL via pg.Pool instead
+  const url = new URL(connectionString!);
+  url.searchParams.delete("sslmode");
+
   const pool = new pg.Pool({
-    connectionString,
-    ssl: { rejectUnauthorized: false },
+    connectionString: url.toString(),
+    ssl: {
+      rejectUnauthorized: false,
+    },
   });
+
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter }) as unknown as PrismaClient;
 }
