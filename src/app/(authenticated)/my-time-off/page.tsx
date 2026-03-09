@@ -90,29 +90,27 @@ export default function MyTimeOffPage() {
     <div>
       <h1 className="text-2xl font-bold tracking-tight mb-6">My Time Off</h1>
 
-      {/* Stats - admin only */}
-      {isAdmin && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-          <div className="bg-bg-surface border border-border rounded-lg p-4">
-            <div className="text-sm text-text-muted mb-1">Days Taken ({currentYear})</div>
-            <div className="text-3xl font-bold font-mono text-success">
-              {daysTaken}
-            </div>
-          </div>
-          <div className="bg-bg-surface border border-border rounded-lg p-4">
-            <div className="text-sm text-text-muted mb-1">Days Pending</div>
-            <div className="text-3xl font-bold font-mono text-pending">
-              {daysPending}
-            </div>
-          </div>
-          <div className="bg-bg-surface border border-border rounded-lg p-4">
-            <div className="text-sm text-text-muted mb-1">Total Requests</div>
-            <div className="text-3xl font-bold font-mono text-text-primary">
-              {thisYearRequests.length}
-            </div>
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="bg-bg-surface border border-border rounded-lg p-4">
+          <div className="text-sm text-text-muted mb-1">Days Taken ({currentYear})</div>
+          <div className="text-3xl font-bold font-mono text-success">
+            {daysTaken}
           </div>
         </div>
-      )}
+        <div className="bg-bg-surface border border-border rounded-lg p-4">
+          <div className="text-sm text-text-muted mb-1">Days Pending</div>
+          <div className="text-3xl font-bold font-mono text-pending">
+            {daysPending}
+          </div>
+        </div>
+        <div className="bg-bg-surface border border-border rounded-lg p-4">
+          <div className="text-sm text-text-muted mb-1">Total Requests</div>
+          <div className="text-3xl font-bold font-mono text-text-primary">
+            {thisYearRequests.length}
+          </div>
+        </div>
+      </div>
 
       {/* Requests List */}
       <h2 className="text-lg font-semibold mb-4">Request History</h2>
