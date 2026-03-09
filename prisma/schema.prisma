@@ -40,7 +40,9 @@ model TimeOffRequest {
   user        User      @relation(fields: [userId], references: [id])
   startDate   DateTime
   endDate     DateTime
-  workingDays Int
+  workingDays Float
+  startHalf   Boolean   @default(false)
+  endHalf     Boolean   @default(false)
   note        String?
   status      Status    @default(PENDING)
   adminNote   String?

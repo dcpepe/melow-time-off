@@ -153,7 +153,7 @@ export default function PendingPage() {
                       {format(new Date(req.endDate), "MMM d, yyyy")}
                       <span className="text-text-dim">
                         {" "}
-                        &middot; {req.workingDays} working day
+                        &middot; {req.workingDays % 1 === 0 ? req.workingDays : req.workingDays.toFixed(1)} working day
                         {req.workingDays !== 1 ? "s" : ""}
                       </span>
                     </div>

@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { startDate, endDate, note } = await request.json();
+    const { startDate, endDate, note, startHalf, endHalf } = await request.json();
 
     if (!startDate || !endDate) {
       return NextResponse.json(
@@ -92,8 +92,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const workingDays = countWorkingDays(start, end);
-    if (workingDays === 0) {
+    const fullWorkingDays = countWorkingDays(start, end);
+    const workingDays = fullWorkingDays - (startHalf ? 0.5 : 0) - (endHalf ? 0.5 : 0);
+    if (workingDays <= 0) {
       return NextResponse.json(
         { error: "Selected range contains no working days" },
         { status: 400 }
@@ -123,6 +124,8 @@ export async function POST(request: NextRequest) {
         startDate: start,
         endDate: end,
         workingDays,
+        startHalf: !!startHalf,
+        endHalf: !!endHalf,
         note: note || null,
       },
       include: {

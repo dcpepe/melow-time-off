@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { format, addMonths, subMonths, isWeekend, eachDayOfInterval } from "date-fns";
+import { format, addMonths, subMonths } from "date-fns";
 import { getCalendarDays } from "@/lib/dates";
 
 interface CalendarRequest {
@@ -265,7 +265,6 @@ export default function CalendarPage() {
               {selectedDay.entries.map((r) => {
                 const start = new Date(r.startDate);
                 const end = new Date(r.endDate);
-                const dayCount = eachDayOfInterval({ start, end }).filter(d => !isWeekend(d)).length;
                 return (
                   <div
                     key={r.id}
@@ -280,7 +279,7 @@ export default function CalendarPage() {
                     <div className="min-w-0">
                       <div className="font-medium">{r.user.name}</div>
                       <div className="text-sm text-text-muted">
-                        {format(start, "MMM d")} - {format(end, "MMM d")} ({dayCount} working day{dayCount !== 1 ? "s" : ""})
+                        {format(start, "MMM d")} - {format(end, "MMM d")} ({r.workingDays % 1 === 0 ? r.workingDays : r.workingDays.toFixed(1)} working day{r.workingDays !== 1 ? "s" : ""})
                       </div>
                       <span
                         className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${

@@ -21,18 +21,29 @@ function getInitialRange(): DateRange | undefined {
 
 export default function RequestPage() {
   const router = useRouter();
-  const [range, setRange] = useState<DateRange | undefined>(getInitialRange);
+  const initialRange = getInitialRange();
+  const [range, setRange] = useState<DateRange | undefined>(initialRange);
+  const [month, setMonth] = useState<Date>(initialRange?.from || startOfDay(new Date()));
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [startHalf, setStartHalf] = useState(false);
+  const [endHalf, setEndHalf] = useState(false);
 
   const today = startOfDay(new Date());
 
-  const workingDays =
+  const isSingleDay = range?.from && range?.to && format(range.from, "yyyy-MM-dd") === format(range.to, "yyyy-MM-dd");
+
+  const fullWorkingDays =
     range?.from && range?.to
       ? eachDayOfInterval({ start: range.from, end: range.to }).filter(
           (d) => !isWeekend(d)
         ).length
+      : 0;
+
+  const workingDays =
+    fullWorkingDays > 0
+      ? fullWorkingDays - (startHalf ? 0.5 : 0) - (!isSingleDay && endHalf ? 0.5 : 0)
       : 0;
 
   async function handleSubmit() {
@@ -52,6 +63,8 @@ export default function RequestPage() {
           startDate: format(range.from, "yyyy-MM-dd"),
           endDate: format(range.to, "yyyy-MM-dd"),
           note: note.trim() || undefined,
+          startHalf,
+          endHalf: isSingleDay ? false : endHalf,
         }),
       });
 
@@ -82,8 +95,13 @@ export default function RequestPage() {
           <DayPicker
             mode="range"
             selected={range}
-            onSelect={setRange}
-            defaultMonth={range?.from || today}
+            onSelect={(newRange) => {
+              setRange(newRange);
+              setStartHalf(false);
+              setEndHalf(false);
+            }}
+            month={month}
+            onMonthChange={setMonth}
             disabled={[{ before: today }, { dayOfWeek: [0, 6] }]}
             numberOfMonths={1}
             classNames={{
@@ -131,6 +149,51 @@ export default function RequestPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Half day toggle */}
+        {range?.from && workingDays > 0 && (
+          <div className="bg-bg-primary border border-border rounded-lg p-4 mb-4">
+            <div className="text-sm text-text-muted mb-2">Half day options</div>
+            {isSingleDay ? (
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={startHalf}
+                  onChange={(e) => setStartHalf(e.target.checked)}
+                  className="accent-gold w-4 h-4"
+                />
+                <span className="text-sm">Half day</span>
+              </label>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={startHalf}
+                    onChange={(e) => setStartHalf(e.target.checked)}
+                    className="accent-gold w-4 h-4"
+                  />
+                  <span className="text-sm">
+                    First day half ({format(range.from, "MMM d")})
+                  </span>
+                </label>
+                {range.to && (
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={endHalf}
+                      onChange={(e) => setEndHalf(e.target.checked)}
+                      className="accent-gold w-4 h-4"
+                    />
+                    <span className="text-sm">
+                      Last day half ({format(range.to, "MMM d")})
+                    </span>
+                  </label>
+                )}
+              </div>
+            )}
           </div>
         )}
 

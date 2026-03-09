@@ -368,7 +368,7 @@ export default function MemberDetailPage() {
                 </span>
               </div>
               <div className="text-sm text-text-muted">
-                {req.workingDays} working day{req.workingDays !== 1 ? "s" : ""}
+                {req.workingDays % 1 === 0 ? req.workingDays : req.workingDays.toFixed(1)} working day{req.workingDays !== 1 ? "s" : ""}
                 {req.note && (
                   <span className="text-text-dim"> &middot; {req.note}</span>
                 )}
