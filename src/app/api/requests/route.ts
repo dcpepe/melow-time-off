@@ -151,7 +151,25 @@ export async function POST(request: NextRequest) {
           select: { id: true, name: true, email: true, color: true },
         },
       },
-    });
+    }).catch(() =>
+      // Fallback if halfDays column doesn't exist yet
+      prisma.timeOffRequest.create({
+        data: {
+          userId: session.userId,
+          startDate: start,
+          endDate: end,
+          workingDays,
+          startHalf: computedStartHalf,
+          endHalf: computedEndHalf,
+          note: note || null,
+        },
+        include: {
+          user: {
+            select: { id: true, name: true, email: true, color: true },
+          },
+        },
+      })
+    );
 
     // Send email to admins
     const admins = await prisma.user.findMany({
