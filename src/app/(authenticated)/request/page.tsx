@@ -124,6 +124,7 @@ export default function RequestPage() {
               disabled: "text-text-dim/30 cursor-not-allowed hover:bg-transparent",
               today: "font-bold text-gold",
               outside: "text-text-dim/20",
+              chevron: "fill-text-muted",
             }}
           />
         </div>
