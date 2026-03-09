@@ -116,12 +116,12 @@ export default function RequestPage() {
             numberOfMonths={1}
             classNames={{
               root: "text-text-primary",
-              months: "flex flex-col",
+              months: "relative flex flex-col",
               month_caption: "flex justify-center items-center h-10",
               caption_label: "text-sm font-semibold text-text-primary",
-              nav: "flex items-center",
-              button_previous: "absolute left-1 p-1 text-text-muted hover:text-text-primary",
-              button_next: "absolute right-1 p-1 text-text-muted hover:text-text-primary",
+              nav: "absolute top-0 right-0 flex items-center h-10",
+              button_previous: "p-1 text-text-muted hover:text-text-primary",
+              button_next: "p-1 text-text-muted hover:text-text-primary",
               weekdays: "flex",
               weekday: "text-text-dim text-xs font-medium w-10 text-center",
               week: "flex",
