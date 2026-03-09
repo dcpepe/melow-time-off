@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { format, addMonths, subMonths } from "date-fns";
 import { getCalendarDays } from "@/lib/dates";
+import { useAuthStore } from "@/lib/store";
 
 interface CalendarRequest {
   id: string;
@@ -27,6 +28,8 @@ interface DayDetail {
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export default function CalendarPage() {
+  const authUser = useAuthStore((s) => s.user);
+  const isAdmin = authUser?.role === "ADMIN";
   const router = useRouter();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [requests, setRequests] = useState<CalendarRequest[]>([]);
@@ -279,7 +282,7 @@ export default function CalendarPage() {
                     <div className="min-w-0">
                       <div className="font-medium">{r.user.name}</div>
                       <div className="text-sm text-text-muted">
-                        {format(start, "MMM d")} - {format(end, "MMM d")} ({r.workingDays % 1 === 0 ? r.workingDays : r.workingDays.toFixed(1)} working day{r.workingDays !== 1 ? "s" : ""})
+                        {format(start, "MMM d")} - {format(end, "MMM d")}{isAdmin && <> ({r.workingDays % 1 === 0 ? r.workingDays : r.workingDays.toFixed(1)} working day{r.workingDays !== 1 ? "s" : ""})</>}
                       </div>
                       <span
                         className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full font-medium ${
