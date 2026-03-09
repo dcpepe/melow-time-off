@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { countWorkingDays } from "@/lib/dates";
 import { sendRequestSubmittedEmail } from "@/lib/email";
-import { format } from "date-fns";
+import { format, eachDayOfInterval, isWeekend } from "date-fns";
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,7 +63,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const { startDate, endDate, note, startHalf, endHalf } = await request.json();
+    const { startDate, endDate, note, halfDays, startHalf, endHalf } = await request.json();
 
     if (!startDate || !endDate) {
       return NextResponse.json(
@@ -93,7 +93,11 @@ export async function POST(request: NextRequest) {
     }
 
     const fullWorkingDays = countWorkingDays(start, end);
-    const workingDays = fullWorkingDays - (startHalf ? 0.5 : 0) - (endHalf ? 0.5 : 0);
+    // Support new halfDays array or legacy startHalf/endHalf
+    const halfDayArray: string[] = Array.isArray(halfDays) ? halfDays : [];
+    const halfDayCount = halfDayArray.length;
+    const legacyHalfCount = (startHalf ? 0.5 : 0) + (endHalf ? 0.5 : 0);
+    const workingDays = fullWorkingDays - (halfDayCount > 0 ? halfDayCount * 0.5 : legacyHalfCount);
     if (workingDays <= 0) {
       return NextResponse.json(
         { error: "Selected range contains no working days" },
@@ -118,14 +122,28 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Compute backward-compat startHalf/endHalf from halfDays array
+    const startStr = format(start, "yyyy-MM-dd");
+    const endStr = format(end, "yyyy-MM-dd");
+    const computedStartHalf = halfDayArray.includes(startStr) || !!startHalf;
+    const computedEndHalf = halfDayArray.includes(endStr) || !!endHalf;
+    // Validate halfDays are actual working days in the range
+    const workingDayStrs = new Set(
+      eachDayOfInterval({ start, end })
+        .filter((d) => !isWeekend(d))
+        .map((d) => format(d, "yyyy-MM-dd"))
+    );
+    const validHalfDays = halfDayArray.filter((d: string) => workingDayStrs.has(d));
+
     const timeOffRequest = await prisma.timeOffRequest.create({
       data: {
         userId: session.userId,
         startDate: start,
         endDate: end,
         workingDays,
-        startHalf: !!startHalf,
-        endHalf: !!endHalf,
+        startHalf: computedStartHalf,
+        endHalf: computedEndHalf,
+        halfDays: validHalfDays,
         note: note || null,
       },
       include: {

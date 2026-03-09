@@ -43,6 +43,7 @@ model TimeOffRequest {
   workingDays Float
   startHalf   Boolean   @default(false)
   endHalf     Boolean   @default(false)
+  halfDays    Json      @default("[]")
   note        String?
   status      Status    @default(PENDING)
   adminNote   String?

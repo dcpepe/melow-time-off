@@ -27,24 +27,36 @@ export default function RequestPage() {
   const [note, setNote] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const [startHalf, setStartHalf] = useState(false);
-  const [endHalf, setEndHalf] = useState(false);
+  const [halfDays, setHalfDays] = useState<Set<string>>(new Set());
 
   const today = startOfDay(new Date());
 
-  const isSingleDay = range?.from && range?.to && format(range.from, "yyyy-MM-dd") === format(range.to, "yyyy-MM-dd");
-
-  const fullWorkingDays =
+  const workingDaysList =
     range?.from && range?.to
       ? eachDayOfInterval({ start: range.from, end: range.to }).filter(
           (d) => !isWeekend(d)
-        ).length
-      : 0;
+        )
+      : [];
 
-  const workingDays =
-    fullWorkingDays > 0
-      ? fullWorkingDays - (startHalf ? 0.5 : 0) - (!isSingleDay && endHalf ? 0.5 : 0)
-      : 0;
+  const fullWorkingDays = workingDaysList.length;
+
+  const halfDayCount = workingDaysList.filter((d) =>
+    halfDays.has(format(d, "yyyy-MM-dd"))
+  ).length;
+
+  const workingDays = fullWorkingDays > 0 ? fullWorkingDays - halfDayCount * 0.5 : 0;
+
+  function toggleHalfDay(dateStr: string) {
+    setHalfDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(dateStr)) {
+        next.delete(dateStr);
+      } else {
+        next.add(dateStr);
+      }
+      return next;
+    });
+  }
 
   async function handleSubmit() {
     if (!range?.from || !range?.to) return;
@@ -63,8 +75,7 @@ export default function RequestPage() {
           startDate: format(range.from, "yyyy-MM-dd"),
           endDate: format(range.to, "yyyy-MM-dd"),
           note: note.trim() || undefined,
-          startHalf,
-          endHalf: isSingleDay ? false : endHalf,
+          halfDays: Array.from(halfDays),
         }),
       });
 
@@ -97,8 +108,7 @@ export default function RequestPage() {
             selected={range}
             onSelect={(newRange) => {
               setRange(newRange);
-              setStartHalf(false);
-              setEndHalf(false);
+              setHalfDays(new Set());
             }}
             month={month}
             onMonthChange={setMonth}
@@ -153,48 +163,30 @@ export default function RequestPage() {
           </div>
         )}
 
-        {/* Half day toggle */}
-        {range?.from && workingDays > 0 && (
+        {/* Half day toggles */}
+        {range?.from && workingDaysList.length > 0 && (
           <div className="bg-bg-primary border border-border rounded-lg p-4 mb-4">
             <div className="text-sm text-text-muted mb-2">Half day options</div>
-            {isSingleDay ? (
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={startHalf}
-                  onChange={(e) => setStartHalf(e.target.checked)}
-                  className="accent-gold w-4 h-4"
-                />
-                <span className="text-sm">Half day</span>
-              </label>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={startHalf}
-                    onChange={(e) => setStartHalf(e.target.checked)}
-                    className="accent-gold w-4 h-4"
-                  />
-                  <span className="text-sm">
-                    First day half ({format(range.from, "MMM d")})
-                  </span>
-                </label>
-                {range.to && (
-                  <label className="flex items-center gap-2 cursor-pointer">
+            <div className="flex flex-col gap-2 max-h-48 overflow-y-auto">
+              {workingDaysList.map((d) => {
+                const dateStr = format(d, "yyyy-MM-dd");
+                return (
+                  <label key={dateStr} className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={endHalf}
-                      onChange={(e) => setEndHalf(e.target.checked)}
+                      checked={halfDays.has(dateStr)}
+                      onChange={() => toggleHalfDay(dateStr)}
                       className="accent-gold w-4 h-4"
                     />
                     <span className="text-sm">
-                      Last day half ({format(range.to, "MMM d")})
+                      {workingDaysList.length === 1
+                        ? "Half day"
+                        : `Half day \u2014 ${format(d, "EEE, MMM d")}`}
                     </span>
                   </label>
-                )}
-              </div>
-            )}
+                );
+              })}
+            </div>
           </div>
         )}
 
