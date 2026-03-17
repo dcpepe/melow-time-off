@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { countWorkingDays } from "@/lib/dates";
 import { sendRequestSubmittedEmail } from "@/lib/email";
+import { sendSlackTimeOffNotification } from "@/lib/slack";
 import { format, eachDayOfInterval, isWeekend } from "date-fns";
 
 export async function GET(request: NextRequest) {
@@ -179,6 +180,15 @@ export async function POST(request: NextRequest) {
 
     sendRequestSubmittedEmail(
       admins.map((a) => a.email),
+      session.name,
+      format(start, "MMM d, yyyy"),
+      format(end, "MMM d, yyyy"),
+      workingDays,
+      note
+    ).catch(console.error);
+
+    // Send Slack notification
+    sendSlackTimeOffNotification(
       session.name,
       format(start, "MMM d, yyyy"),
       format(end, "MMM d, yyyy"),
