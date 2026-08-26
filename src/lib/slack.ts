@@ -1,3 +1,5 @@
+import { getAppUrl } from "@/lib/app-url";
+
 const SLACK_WEBHOOK_URL = process.env.SLACK_WEBHOOK_URL;
 
 export async function sendSlackTimeOffNotification(
@@ -12,7 +14,7 @@ export async function sendSlackTimeOffNotification(
     return;
   }
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const appUrl = await getAppUrl();
 
   const blocks = [
     {
