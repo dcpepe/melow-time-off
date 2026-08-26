@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import { getAppUrl } from "@/lib/app-url";
 
 const transporter =
   process.env.SMTP_HOST
@@ -39,6 +40,7 @@ export async function sendRequestSubmittedEmail(
   workingDays: number,
   note?: string
 ) {
+  const appUrl = await getAppUrl();
   const subject = `New time off request from ${requesterName}`;
   const html = `
     <div style="font-family: sans-serif; max-width: 500px;">
@@ -49,7 +51,7 @@ export async function sendRequestSubmittedEmail(
         <li><strong>Working days:</strong> ${workingDays}</li>
         ${note ? `<li><strong>Note:</strong> ${note}</li>` : ""}
       </ul>
-      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/admin/pending">Review request</a></p>
+      <p><a href="${appUrl}/admin/pending">Review request</a></p>
     </div>
   `;
 
@@ -66,6 +68,7 @@ export async function sendRequestReviewedEmail(
   endDate: string,
   adminNote?: string
 ) {
+  const appUrl = await getAppUrl();
   const statusText = status === "APPROVED" ? "approved" : "rejected";
   const statusColor = status === "APPROVED" ? "#4ECDC4" : "#FF6B6B";
 
@@ -76,7 +79,7 @@ export async function sendRequestReviewedEmail(
       <p>Hi ${requesterName},</p>
       <p>Your time off request for <strong>${startDate} to ${endDate}</strong> has been <strong style="color: ${statusColor};">${statusText}</strong>.</p>
       ${adminNote ? `<p><strong>Note from admin:</strong> ${adminNote}</p>` : ""}
-      <p><a href="${process.env.NEXT_PUBLIC_APP_URL}/my-time-off">View your requests</a></p>
+      <p><a href="${appUrl}/my-time-off">View your requests</a></p>
     </div>
   `;
 
